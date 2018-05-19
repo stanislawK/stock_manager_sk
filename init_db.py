@@ -17,25 +17,25 @@ def db_start():
     user.admin = True
     user.poweruser = True
     db.session.add(user)
-    # db.session.commit()
+    db.session.commit()
 
     #dodanie przykładowych produktów i klientów
     product1 = Products(
         name='Car tire A',
         group='Tires',
-        quantity=1,
+        stock_quantity=1,
         price=50
     )
     product2 = Products(
         name='Car tire B',
         group='Tires',
-        quantity=3,
+        stock_quantity=3,
         price=60
     )
     product3 = Products(
         name='Car piston A',
         group='Pistons',
-        quantity=1,
+        stock_quantity=1,
         price=150
     )
     customer1 = Customers(
@@ -50,11 +50,25 @@ def db_start():
         adress='66-500 Poznan, ul.Niczyja 2',
         payment=21
     )
+
     db.session.add(product1)
     db.session.add(product2)
     db.session.add(product3)
     db.session.add(customer1)
     db.session.add(customer2)
+    db.session.commit()
+    invoice1 = Invoices(
+        customer=customer1
+    )
+    invoice2 = Invoices(
+        customer=customer2
+    )
+    db.session.add(invoice1)
+    db.session.add(invoice2)
+    db.session.commit()
+    invoice1.invoicing.append(product1)
+    invoice1.invoicing.append(product2)
+    invoice1.invoicing.append(product3)
     db.session.commit()
 
 if __name__ == '__main__':

@@ -1,0 +1,67 @@
+{% extends 'layout.html' %}
+{% block body %}
+<div class="container">
+    <h3>test db</h3>
+</div>
+<h1>{{selected_qty}}</h1>
+<!-- invoices -->
+<!--
+<div class="container">
+    <table class="table table-striped">
+        <label>Selected Products</label>
+        <thead>
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Sum</th>
+            <th scope="col">customer</th>
+            <th scope="col">date</th>
+            <th scope="col">products</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for invoice in invoices %}
+        {{invoice.customer.name}}
+        <tr>
+        <td>{{invoice.invoices_id}}</td>
+        <td>{{invoice.sum}}</td>
+        <td>{{invoice.customer}}</td>
+        <td>{{invoice.date}}</td>
+        <td>{{invoice.invoicing}}</td>
+            </tr>
+
+        </tbody>
+    </table>
+</div>
+-->
+<!-- products -->
+<!--
+<div class="container">
+    <table class="table table-striped">
+        <label>Selected Products</label>
+        <thead>
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Name</th>
+            <th scope="col">Group</th>
+            <th scope="col">Qty</th>
+            <th scope="col">Price</th>
+        </tr>
+        </thead>
+        <tbody>
+
+            {% for product in invoice.invoicing %}
+            <tr>
+            <td>{{product.products_id}}</td>
+            <td>{{product.name}}</td>
+            <td>{{product.group}}</td>
+            <td>{{product.quantity}}</td>
+            <td>{{product.price}}</td>
+                </tr>
+            {% endfor %}
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+-->
+
+{% endblock %}

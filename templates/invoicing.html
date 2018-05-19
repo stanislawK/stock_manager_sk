@@ -1,11 +1,11 @@
 {% extends 'layout.html' %}
 {% block body %}
-<div class="container">
-    <h3>Make Invoice</h3>
-</div>
 
 <!-- Choose customer -->
 {% if not selected_customer %}
+<div class="container">
+    <h3>Make Invoice</h3>
+</div>
 <div class="container">
     <h5>Choose customer by ID or name:</h5>
     <form method="POST">
@@ -47,7 +47,7 @@
 <!-- table with customer info -->
 <div class="container">
     <table class="table table-striped">
-        <label>Selected Customer</label>
+        <label>Selected Customer:</label>
         <thead>
         <tr>
             <th scope="col">ID</th>
@@ -59,7 +59,7 @@
         </thead>
         <tbody>
         <tr>
-        <td>{{selected_customer.id}}</td>
+        <td>{{selected_customer.customers_id}}</td>
         <td>{{selected_customer.name}}</td>
         <td>{{selected_customer.nip}}</td>
         <td>{{selected_customer.adress}}</td>
@@ -80,18 +80,12 @@
         </div>
       </div>
         <div class="form-group row">
-        <label for="colFormLabelLg" class="col-sm-2 col-form-label col-form-label-lg">Product Name</label>
-        <div class="col-sm-10">
-          <input type="text" class="form-control form-control-lg" id="colFormLabelLg" name="product_name" placeholder="NAME">
-        </div>
-      </div>
-        <div class="form-group row">
             <label for="colFormLabelLg" class="col-sm-2 col-form-label col-form-label-lg">Choose from list</label>
             <div class="col-sm-10">
                 <select class="form-control form-control-lg " placeholder="NAME" name="product_id_list">
                     <option selected>Choose...</option>
                     {% for product in products %}
-                    <option value="{{product.id}}">{{product.name}}</option>
+                    <option value="{{product.products_id}}">{{product.name}}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -113,46 +107,82 @@
 
 
 <!-- selected products -->
-<div class="container">
-    <table class="table table-striped">
-        <label>Selected Products</label>
-        <thead>
-        <tr>
-            <th scope="col">ID</th>
-            <th scope="col">Name</th>
-            <th scope="col">Group</th>
-            <th scope="col">Qty</th>
-            <th scope="col">Price</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for product in basket %}
+    {% if basket %}
+
+    <div class="container">
+        <table class="table table-striped">
+            <label>Selected Products</label>
+            <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Name</th>
+                <th scope="col">Group</th>
+                <th scope="col">Qty</th>
+                <th scope="col">Price</th>
+                <th scope="col">Amount</th>
+            </tr>
+            </thead>
+            <tbody>
+         {% for product in basket %}
         <tr>
         <td>{{product.id}}</td>
         <td>{{product.product_name}}</td>
         <td>{{product.product_group}}</td>
-        <td>{{product.product_quantity}}</td>
+
+         <!-- Choosing product's amount -->
+        <td>
+            <form method="POST">
+                <div class="form-row">
+                <div class="form-group col-md-6">
+                  <select id="inputState" class="form-control" name="product_qty" onchange="this.form.submit()">
+                    <option selected>Choose...</option>
+                      {% for i in range(1, product.stock_quantity+1) %}
+                    <option value="[{{product.id}}, {{i}}]">{{i}}</option>
+                      {% endfor %}
+                  </select>
+
+                </div>
+                </div>
+            </form>
+        </td>
         <td>{{product.product_price}}</td>
+        <td>
+
+        </td>
             </tr>
         {% endfor %}
-        </tbody>
-    </table>
-</div>
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
 {% endif %}
 
 
+<!-- Making invoice and cleaning basket button -->
+{% if basket %}
+
+<div class="container">
+    <form method="POST">
+        <div class="form-group row">
+            <div class="col-sm-10">
+                <input type="submit" name="make_invoice" value="Make Invoice" class="btn btn-primary btn-lg btn-block">
+            </div>
+        </div>
+    </form>
+    </div>
+{% endif %}
+<!-- Modal -->
+{% if new_invoice %}
 <!-- Button trigger modal -->
 <div class="container">
     <div class="form-group row">
         <div class="col-sm-10">
             <button type="button" class="btn btn-primary btn-lg btn-block" data-toggle="modal" data-target="#exampleModalLong">
-              Make Invoice
+              Show Invoice
             </button>
         </div>
         </div>
-    </div>
-<!-- Modal -->
-
+</div>
 <div class="modal fade bd-example-modal-lg" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
@@ -166,7 +196,7 @@
   <div class="container-fluid">
     <div class="row">
       <div class="col-md-4">Stock Manager Sp. z o.o.<br>gen. Tadeusza Kutrzeby 10<br>61-719 Poznań<br>NIP: 123-456-00-00</div>
-      <div class="col-md-4 ml-auto">Poznań, wstawić aktualną datę</div>
+      <div class="col-md-4 ml-auto">Poznań, {{new_invoice.date.date()}}</div>
     </div>
       <div class="row">
           <div class="col">
@@ -174,8 +204,8 @@
           </div>
       </div>
     <div class="row">
-      <div class="col-md-3 ml-auto"><b>Invoice</b><br>Number (wstawić numer)/(wstawić rok)</div>
-      <div class="col-md-3 ml-auto">Customer name<br>Customer adress<br>customer nip<br>Cusomer id</div>
+      <div class="col-md-3 ml-auto"><b>Invoice</b><br>{{new_invoice.invoices_id}}/{{new_invoice.date.year}}</div>
+      <div class="col-md-3 ml-auto">{{new_invoice.customer.name}}<br>{{new_invoice.customer.adress}}<br>{{new_invoice.customer.nip}}<br>ID: {{new_invoice.customer.customers_id}}</div>
     </div>
       <div class="row">
           <div class="col">
@@ -183,7 +213,7 @@
           </div>
       </div>
     <div class="row">
-      <div class="col-md-6 ml-auto">Payment day: ...<br>Account no 111222333444555</div>
+      <div class="col-md-6 ml-auto">Payment day: {{payment_day.date()}}<br>Account no 111222333444555</div>
     </div>
       <div class="row">
           <div class="col">
@@ -204,12 +234,14 @@
             </tr>
           </thead>
           <tbody>
+          {% for item in new_invoice.invoicing %}
             <tr>
-              <td>Tire A / Product code: ?</td>
-              <td>50</td>
-              <td>2</td>
-              <td>100</td>
+              <td>{{item.name}} / Product code: {{item.products_id}}</td>
+              <td>{{item.price}}</td>
+              <td>{{item.quantity}}</td>
+              <td>{{item.price * item.quantity}}</td>
             </tr>
+          {% endfor %}
             <tr>
               <th class="text-right" scope="row" colspan="3">Subtotal</th>
               <td>100 PLN</td>
@@ -235,5 +267,5 @@
     </div>
   </div>
 </div>
-
+{% endif %}
 {% endblock %}
