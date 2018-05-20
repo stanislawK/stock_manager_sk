@@ -91,6 +91,7 @@ class Invoices(db.Model):
     sum = db.Column(db.Integer, default=0)
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.customers_id'), nullable=False)
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    payment_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     quantities = db.relationship('Quantities', backref='invoice', lazy=True)
 
 class Quantities(db.Model):

@@ -185,54 +185,89 @@ def products_select(id):
             db.session.commit()
             new_invoice = Invoices.query.order_by("-invoices_id").first()
             payment_day = new_invoice.date + datetime.timedelta(days=selected_customer.payment)
-            # quantites = Quantities.query.filter(invoice_id=new_invoice.invoices_id).all()
-            #return render_template('test.html', new_invoice=new_invoice)
+            new_invoice.payment_date = payment_day
+            db.session.commit()
+            new_invoice = Invoices.query.order_by("-invoices_id").first()
             return render_template('invoicing.html', products=products, selected_customer=selected_customer, new_invoice=new_invoice, payment_day=payment_day)
 
 
     return render_template('invoicing.html', products=products, selected_customer=selected_customer)
 
-# @app.route('/invoicing/customer/<int:id>', methods=['GET','POST'])
-# #@login_required
-# def products_select(id):
-#     products = Products.query.all()
-#     selected_customer = Customers.query.get_or_404(id)
-#     selected_product = 0
-#     if not selected_product==0:
-#         invoice_candidate = Invoices(customer=selected_customer)
-#         db.session.add(invoice_candidate)
-#         db.session.commit()
-#     basket = Invoices.query.order_by('-invoices_id').first()
-#     if request.method == 'POST':
-#
-#     # Choose product form:
-#         if request.form.get('product_id') or request.form.get('product_name') or request.form.get(
-#                 'product_id_list'):
-#             if request.form.get('product_id'):
-#                 product_id = int(request.form.get('product_id'))
-#                 selected_product = Products.query.get_or_404(product_id)
-#             elif request.form.get('product_id_list'):
-#                 product_id = int(request.form.get('product_id_list'))
-#                 selected_product = Products.query.get_or_404(product_id)
-#             elif request.form.get('product_name'):
-#                 product_name = request.form.get('product_name')
-#                 selected_product = Products.query.fliter_by(name=product_name).first()
-#
-#             #add selceted product do db
-#             basket.invoicing.append(selected_product)
-#             db.session.commit()
-#
-#             return render_template('invoicing.html', products=products, selected_customer=selected_customer, basket=basket)
-#
-#         #Clean basket
-#         elif request.form.get('clean'):
-#             db.session.delete(basket)
-#             db.session.commit()
-#             return render_template('invoicing.html', products=products, selected_customer=selected_customer)
-#
-#     return render_template('invoicing.html', products=products, selected_customer=selected_customer)
+# Invoices Archive
 
-@app.route('/test', methods=['GET','POST'])
-def test():
+#All invoices
+@app.route('/invoices', methods=['GET','POST'])
+#@login_required
+def invoices_archive():
     invoices = Invoices.query.all()
-    return render_template('test.html', invoices=invoices)
+    if request.method == 'POST':
+        inv_id = request.form.get('selected_invoice')
+        return redirect(url_for('selected_invoice', inv_id=inv_id))
+    return render_template('invoices.html', invoices=invoices)
+
+# Select invoices by customer
+@app.route('/invoices/customer', methods=['GET','POST'])
+#@login_required
+def invoices_by_customer():
+    customers = Customers.query.all()
+    if request.method == 'POST':
+        #Choose customer form:
+        if request.form.get('customer_id') or request.form.get('customer_name') or request.form.get('customer_id_list'):
+            if request.form.get('customer_id'):
+                id = int(request.form.get('customer_id'))
+                return redirect(url_for('customer_invoices', id=id))
+            elif request.method == 'POST' and request.form.get('customer_id_list'):
+                id = int(request.form.get('customer_id_list'))
+                return redirect(url_for('customer_invoices', id=id))
+            else:
+                flash('No such customer in db, try again', 'error')
+                return render_template('invoices.html', customers=customers)
+    return render_template('invoices.html', customers=customers)
+
+#List of selected customer's invoices
+@app.route('/invoices/customer/<int:id>', methods=['GET','POST'])
+#@login_required
+def customer_invoices(id):
+    selected_customer = Customers.query.get_or_404(id)
+    if request.method == 'POST':
+        inv_id = request.form.get('selected_invoice')
+        return redirect(url_for('selected_invoice', inv_id=inv_id))
+    return render_template('invoices.html', selected_customer=selected_customer)
+
+# Select invoices by product
+@app.route('/invoices/product', methods=['GET','POST'])
+#@login_required
+def invoices_by_product():
+    products = Products.query.all()
+    if request.method == 'POST':
+
+    # Choose product form:
+        if request.form.get('product_id') or request.form.get('product_id_list'):
+            if request.form.get('product_id'):
+                product_id = int(request.form.get('product_id'))
+                return redirect(url_for('product_invoices', product_id=product_id))
+            elif request.form.get('product_id_list'):
+                product_id = int(request.form.get('product_id_list'))
+                return redirect(url_for('product_invoices', product_id=product_id))
+    return render_template('invoices.html', products=products)
+
+#List of selected product's invoices
+@app.route('/invoices/product/<int:product_id>', methods=['GET','POST'])
+def product_invoices(product_id):
+    selected_product = Products.query.get_or_404(product_id)
+    if request.method == 'POST':
+        inv_id = request.form.get('selected_invoice')
+        return redirect(url_for('selected_invoice', inv_id=inv_id))
+    return render_template('invoices.html', selected_product=selected_product)
+
+
+#Selected invoice
+@app.route('/invoice/<int:inv_id>', methods=['GET', 'POST'])
+def selected_invoice(inv_id):
+    invoice = Invoices.query.get_or_404(inv_id)
+    return render_template('invoice.html', invoice=invoice)
+
+# @app.route('/test', methods=['GET','POST'])
+# def test():
+#     invoices = Invoices.query.all()
+#     return render_template('test.html', invoices=invoices)
