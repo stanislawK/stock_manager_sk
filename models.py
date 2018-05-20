@@ -80,8 +80,8 @@ class Products(db.Model):
     ordering = db.relationship('Invoices', secondary=orders, backref=db.backref('invoicing'), lazy='dynamic')
     product_qty = db.relationship('Quantities', backref='product', lazy=True)
 
-    def __repr__(self):
-        return "Products(products_id={}, name='{}', group='{}', quantity='{}', price='{}'".format(self.products_id, self.name, self.group, self.quantity, self.price)
+    # def __repr__(self):
+    #     return "Products(products_id={}, name='{}', group='{}', quantity='{}', price='{}'".format(self.products_id, self.name, self.group, self.quantity, self.price)
 
 class Invoices(db.Model):
     __tablename__ = 'invoices'

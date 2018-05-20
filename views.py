@@ -144,8 +144,17 @@ def products_select(id):
 
         #Choosing product quantity
         elif request.form.get('product_qty'):
-            selected_qty = request.form.get('product_qty')
-            return render_template('test.html', selected_qty=selected_qty)
+            selected_qty = request.form.get('product_qty').split(' ')
+            product_id = int(selected_qty[0])
+            product_qty = int(selected_qty[1])
+            current_product = Basket.query.filter_by(product_id=product_id).first()
+            current_product.product_quantity = product_qty
+            current_product.product_amount = current_product.product_price * current_product.product_quantity
+            db.session.commit()
+            basket = Basket.query.all()
+            return render_template('invoicing.html', products=products, selected_customer=selected_customer,
+                                   basket=basket)
+            #return render_template('test.html', selected_qty=selected_qty, product_id=product_id, product_qty=product_qty, current_product=current_product)
 
         #Clean basket
         elif request.form.get('clean'):
@@ -159,15 +168,25 @@ def products_select(id):
         elif request.form.get('make_invoice'):
             basket = Basket.query.all()
             new_invoice = Invoices(customer=selected_customer)
+            net_sum = 0
             for item in basket:
-                product_qty = int(request.form.get('product_qty'))
+                product_qty = item.product_quantity
+                total_price = item.product_amount
                 new_product = Products.query.get_or_404(item.product_id)
                 new_invoice.invoicing.append(new_product)
-                new_quantity = Quantities(invoice=new_invoice, product=new_product, order_quantity=product_qty)
+                net_sum += round(float(total_price),2)
+                new_quantity = Quantities(invoice=new_invoice, product=new_product, order_quantity=product_qty, total_price=total_price)
+                db.session.add(new_quantity)
                 db.session.delete(item)
+            new_invoice.net = net_sum
+            new_invoice.tax = round(float(new_invoice.net * 0.23),2)
+            new_invoice.sum = round(float(new_invoice.net + new_invoice.tax),2)
+            db.session.add(new_invoice)
             db.session.commit()
+            new_invoice = Invoices.query.order_by("-invoices_id").first()
             payment_day = new_invoice.date + datetime.timedelta(days=selected_customer.payment)
-
+            # quantites = Quantities.query.filter(invoice_id=new_invoice.invoices_id).all()
+            #return render_template('test.html', new_invoice=new_invoice)
             return render_template('invoicing.html', products=products, selected_customer=selected_customer, new_invoice=new_invoice, payment_day=payment_day)
 
 
